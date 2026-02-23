@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../redux/api/api";
+import { api } from "../../utils/api/api";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../../redux/slice/product";
 import type { AppDispatch } from "../../redux/store/store";

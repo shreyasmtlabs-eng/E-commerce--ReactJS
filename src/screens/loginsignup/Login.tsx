@@ -25,21 +25,69 @@ const Login = () => {
     formState: { errors },
   } = useForm<LoginFormData>();
 
-  const onSubmit = (data: LoginFormData) => {
+  // const onSubmit = async (data: LoginFormData) => {
+  //   setLoading(true);
+
+  //   setTimeout(() => {
+  //     const foundUser = users.find(
+  //       (u) => u.email === data.email && u.password === data.password,
+  //     );
+
+  //     if (foundUser) {
+  //       dispatch(
+  //         loginSuccess({
+  //           user: foundUser,
+  //           token: crypto.randomUUID(),
+  //         }),
+  //       );
+  //       navigate("/home", { replace: true });
+  //     } else {
+  //       setError("password", {
+  //         type: "manual",
+  //         message: "Invalid email or password",
+  //       });
+  //     }
+
+  //     setLoading(false);
+  //   }, 1500);
+  // };
+
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
 
-    setTimeout(() => {
-      const foundUser = users.find(
-        (u) => u.email === data.email && u.password === data.password,
-      );
+    try {
+      const response = await fetch("https://fakestoreapi.com/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: "mor_2314",
+          password: "83r5^_",
+        }),
+      });
 
-      if (foundUser) {
+      const result = await response.json();
+
+      if (result?.token) {
+        const foundUser = users.find(
+          (u) => u.email === data.email && u.password === data.password,
+        );
+
+        if (!foundUser) {
+          setError("password", {
+            type: "manual",
+            message: "User not registered",
+          });
+          setLoading(false);
+          return;
+        }
+
         dispatch(
           loginSuccess({
             user: foundUser,
-            token: crypto.randomUUID(),
+            token: result.token,
           }),
         );
+
         navigate("/home", { replace: true });
       } else {
         setError("password", {
@@ -47,9 +95,12 @@ const Login = () => {
           message: "Invalid email or password",
         });
       }
-
+    } catch (error) {
+      console.error("Login Error:", error);
+      alert("Login failed. Try again!");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   useEffect(() => {
@@ -120,6 +171,7 @@ const Login = () => {
             {errors.password?.message}
           </p>
 
+          {/* correct this is english */}
           <div className="flex items-center justify-end text-sm">
             <button type="button" className="text-purple-600 hover:underline">
               Forgot password?

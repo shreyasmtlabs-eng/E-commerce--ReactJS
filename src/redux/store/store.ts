@@ -2,24 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slice/auth";
 import productReducer from "../slice/product";
 
-//   const loadState = () => {
-//   try {
-//     const serialized = localStorage.getItem("auth");
-  
-//     if (serialized === null) return undefined;
-//     return { auth: JSON.parse(serialized) };
-//   } catch {
-//     return undefined;
-//   }
-// };
-
-// const saveState = (state: RootState) => {
-//   try {
-//     localStorage.setItem("auth", JSON.stringify(state.auth));
-//   } catch (err) {
-//      console.error("Failed to save state:>>>>>>>", err);
-//   }
-// };
 
 
 const loadState = () => {
@@ -58,3 +40,5 @@ store.subscribe(() => {
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+

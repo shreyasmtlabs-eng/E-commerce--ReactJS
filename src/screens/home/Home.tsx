@@ -17,7 +17,9 @@ export default function Home() {
   const [selectedcategory, setSelectedcategory] = useState("all");
   const [showcategory, setShowcategory] = useState(false);
   const [showMore, setShowMore] = useState(false);
-
+  const [filter, setFilter] = useState(false);
+  const [sortBy, setSortBy] = useState("");
+  const filterRef = useRef<HTMLDivElement>(null);
   // const { products, loading } = useSelector(
   //   (state: RootState) => state.products,
   // );
@@ -25,6 +27,7 @@ export default function Home() {
   const { products: reduxProducts, loading } = useSelector(
     (state: RootState) => state.products,
   );
+  console.log("Redux Products API Response:>>>>>>", reduxProducts);
 
   const allProducts = [...reduxProducts];
 
@@ -37,29 +40,52 @@ export default function Home() {
   //   "/lipstick.webp",
   // ];
 
+  // console.log(
+  //   "All API Categories:>>>>",
+  //   allProducts.map((p) => p.category),
+  // );
   const bannerImages = reduxProducts.slice(0, 20).map((p) => p.image);
 
   const categories = [
     "all",
     "women's clothing",
     "men's clothing",
+    "men",
     "jewelery",
     "electronics",
   ];
 
-  const filterProducts =
-    selectedcategory === "all"
-      ? allProducts
-      : allProducts.filter((p) => p.category === selectedcategory);
+  // const filterProducts =
+  //   selectedcategory === "all"
+  //     ? allProducts
+  //     : allProducts.filter((p) => p.category === selectedcategory);
 
   // useEffect(() => {
   //   dispatch(fetchProducts());
   // }, [dispatch]);
 
+  const filterProducts =
+    selectedcategory === "all"
+      ? [...allProducts]
+      : allProducts.filter(
+          (p) =>
+            p.category.toLowerCase().trim() ===
+            selectedcategory.toLowerCase().trim(),
+        );
+  console.log("Filtered Products:>>>>", filterProducts);
+  const sortedProducts = [...filterProducts].sort((a, b) => {
+    if (sortBy === "lowToHigh") return a.price - b.price;
+    if (sortBy === "highToLow") return b.price - a.price;
+    if (sortBy === "aToZ") return a.title.localeCompare(b.title);
+    if (sortBy === "zToA") return b.title.localeCompare(a.title);
+    return 0;
+  });
+  console.log("Sorted Products:>>>>", sortedProducts);
+
   useEffect(() => {
-    if (reduxProducts.length === 0) {
-      dispatch(fetchProducts());
-    }
+    // if (reduxProducts.length === 0) {
+    dispatch(fetchProducts());
+    // }
   }, [dispatch]);
 
   useEffect(() => {
@@ -81,6 +107,12 @@ export default function Home() {
 
       if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
         setShowMore(false);
+      }
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
+        setFilter(false);
       }
     };
 
@@ -124,6 +156,69 @@ export default function Home() {
             >
               About
             </button>
+
+            <div ref={filterRef} className="relative">
+              <button
+                onClick={() => setFilter(!filter)}
+                className="text-white font-semibold hover:underline mt-1"
+              >
+                Filter
+              </button>
+
+              {filter && (
+                <div className="absolute left-0 top-full mt-2 bg-white text-black shadow-lg rounded w-56 z-50">
+                  <div
+                    onClick={() => {
+                      setSortBy("lowToHigh");
+                      setFilter(false);
+                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  >
+                    Price: Low → High
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setSortBy("highToLow");
+                      setFilter(false);
+                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  >
+                    Price: High → Low
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setSortBy("aToZ");
+                      setFilter(false);
+                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  >
+                    A → Z
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setSortBy("zToA");
+                      setFilter(false);
+                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  >
+                    Z → A
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      setSortBy("");
+                      setFilter(false);
+                    }}
+                    className="px-4 py-2 hover:bg-red-100 cursor-pointer text-sm text-red-600"
+                  >
+                    Clear Filter
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div
               ref={categoryRef}
@@ -227,11 +322,13 @@ export default function Home() {
 
         <div className="px-6 py-10 bg-[#f5f5f5]">
           <h2 className="text-xl font-bold mb-6">Today's Deals</h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {loading ? (
               <p className="text-center col-span-full">Loading Products.....</p>
             ) : (
-              filterProducts.map((p) => (
+              // filterProducts.map((p) => (
+              sortedProducts.map((p) => (
                 <div
                   key={p.id}
                   // onClick={() => navigate(`/product/${p.id}`, { state: p })}

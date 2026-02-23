@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { api } from "../api/api";
+import { api } from "../../utils/api/api";
 
  export interface Product {
   id: number;
@@ -26,6 +26,7 @@ const initialState: ProductState = {
 
 export const fetchProducts = createAsyncThunk("products/fetch", async () => {
     const res = await api.get("/products");
+ console.log(" API Response:>>>>>", res.data);
     return res.data;
   }
 );
@@ -88,7 +89,13 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+  const customProducts = state.products.filter(p => p.id > 1000);
+        
+
+       // state.products = action.payload;
+ state.products = [...action.payload, ...customProducts];
+     
+
       })
       .addCase(fetchProducts.rejected, (state) => {
         state.loading = false;

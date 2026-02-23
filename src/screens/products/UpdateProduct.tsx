@@ -31,6 +31,7 @@ export default function UpdateProduct() {
 
     const updatedData = {
       ...editProduct,
+
       price: Number(editProduct.price),
     };
 

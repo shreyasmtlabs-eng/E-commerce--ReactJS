@@ -73,7 +73,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
 
-       console.log(" after logout:", {
+       console.log(" after logout:>>>>>", {
     user: state.user,
     token: state.token,
     isAuthenticated: state.isAuthenticated,
