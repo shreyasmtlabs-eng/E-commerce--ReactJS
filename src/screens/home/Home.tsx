@@ -9,17 +9,20 @@ import { useLocation } from "react-router-dom";
 export default function Home() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const categoryRef = useRef<HTMLDivElement>(null);
-  const moreRef = useRef<HTMLDivElement>(null);
+  // const categoryRef = useRef<HTMLDivElement>(null);
+  // const moreRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-
   const [index, setIndex] = useState(0);
   const [selectedcategory, setSelectedcategory] = useState("all");
-  const [showcategory, setShowcategory] = useState(false);
-  const [showMore, setShowMore] = useState(false);
-  const [filter, setFilter] = useState(false);
+  // const [showcategory, setShowcategory] = useState(false);
+  // const [showMore, setShowMore] = useState(false);
+  // const [filter, setFilter] = useState(false);
   const [sortBy, setSortBy] = useState("");
-  const filterRef = useRef<HTMLDivElement>(null);
+  // const filterRef = useRef<HTMLDivElement>(null);
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [drawerFilterOpen, setDrawerFilterOpen] = useState(false);
+  const [drawerMoreOpen, setDrawerMoreOpen] = useState(false);
+  const [drawerCategoryOpen, setDrawerCategoryOpen] = useState(false);
   // const { products, loading } = useSelector(
   //   (state: RootState) => state.products,
   // );
@@ -30,7 +33,6 @@ export default function Home() {
   console.log("Redux Products API Response:>>>>>>", reduxProducts);
 
   const allProducts = [...reduxProducts];
-
   // const banners = [
   //   "/myImg2.png",
   //   "/myImg3.png",
@@ -44,15 +46,17 @@ export default function Home() {
   //   "All API Categories:>>>>",
   //   allProducts.map((p) => p.category),
   // );
-  const bannerImages = reduxProducts.slice(0, 20).map((p) => p.image);
 
+  const bannerImages = reduxProducts.slice(0, 20).map((p) => p.image);
   const categories = [
     "all",
     "women's clothing",
     "men's clothing",
     "men",
+    "women",
     "jewelery",
     "electronics",
+    "footwear",
   ];
 
   // const filterProducts =
@@ -73,6 +77,7 @@ export default function Home() {
             selectedcategory.toLowerCase().trim(),
         );
   console.log("Filtered Products:>>>>", filterProducts);
+
   const sortedProducts = [...filterProducts].sort((a, b) => {
     if (sortBy === "lowToHigh") return a.price - b.price;
     if (sortBy === "highToLow") return b.price - a.price;
@@ -88,37 +93,36 @@ export default function Home() {
     // }
   }, [dispatch]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % bannerImages.length);
-    }, 2500);
+  // useEffect(() => {
+  //   const timer = setInterval(() => {
+  //     setIndex((prev) => (prev + 1) % bannerImages.length);
+  //   }, 2500);
+  //   return () => clearInterval(timer);
+  // }, [bannerImages.length]);
 
-    return () => clearInterval(timer);
-  }, [bannerImages.length]);
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       categoryRef.current &&
+  //       !categoryRef.current.contains(event.target as Node)
+  //     ) {
+  //       setShowcategory(false);
+  //     }
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        categoryRef.current &&
-        !categoryRef.current.contains(event.target as Node)
-      ) {
-        setShowcategory(false);
-      }
+  //     if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
+  //       setShowMore(false);
+  //     }
+  //     if (
+  //       filterRef.current &&
+  //       !filterRef.current.contains(event.target as Node)
+  //     ) {
+  //       setFilter(false);
+  //     }
+  //   };
 
-      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
-        setShowMore(false);
-      }
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
-        setFilter(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
   useEffect(() => {
     if (location.state?.message) {
@@ -127,23 +131,251 @@ export default function Home() {
     }
   }, [location]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    console.log(" state cleared:>>>>>>>");
-    navigate("/login", { replace: true });
-  };
+  // const handleLogout = () => {
+  //   dispatch(logout());
+  //   console.log(" state cleared:>>>>>>>");
+  //   navigate("/login", { replace: true });
+  // };
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      <div className="flex flex-wrap items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-black">
-        <div className="flex justify-between w-full">
-          <div className="flex gap-6">
-            <img
-              src="/smtlabs.jpg"
-              alt="logo"
-              className="h-8 w-auto cursor-pointer"
-            />
-            <button
+      {/* Drawer Overlay */}
+      {openDrawer && (
+        <div
+          onClick={() => setOpenDrawer(false)}
+          className="fixed inset-0 bg-black/40 z-40"
+        ></div>
+      )}
+
+      {/* Drawer */}
+      <div
+        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300
+            overflow-y-auto
+  ${openDrawer ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="font-bold text-lg">Menu</h2>
+          <button onClick={() => setOpenDrawer(false)} className="text-xl">
+            ✕
+          </button>
+        </div>
+
+        <div className="p-4 space-y-3 text-sm">
+          <div
+            onClick={() => {
+              navigate("/");
+              setOpenDrawer(false);
+            }}
+            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+          >
+            Home
+          </div>
+
+          <div
+            onClick={() => {
+              navigate("/all");
+              setOpenDrawer(false);
+            }}
+            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+          >
+            All Products
+          </div>
+
+          <div
+            onClick={() => {
+              navigate("/about");
+              setOpenDrawer(false);
+            }}
+            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+          >
+            About
+          </div>
+
+          {/* <div className="border-t pt-3 font-semibold">Categories</div> */}
+          <div
+            onClick={() => setDrawerCategoryOpen(!drawerCategoryOpen)}
+            className="flex justify-between items-center cursor-pointer font-semibold border-t pt-3"
+          >
+            Category
+            <span>{drawerCategoryOpen ? "▲" : "▼"}</span>
+          </div>
+
+          {drawerCategoryOpen && (
+            <div className="pl-3 space-y-1">
+              {categories.map((cat) => (
+                <div
+                  key={cat}
+                  onClick={() => {
+                    setSelectedcategory(cat);
+                    setOpenDrawer(false);
+                  }}
+                  // className="capitalize cursor-pointer hover:bg-gray-100 p-2 rounded"
+                  className={`
+    px-4 py-2 cursor-pointer text-sm capitalize
+    ${
+      selectedcategory === cat
+        ? "bg-green-500 text-white font-semibold"
+        : "hover:bg-gray-100 text-black"
+    }
+  `}
+                >
+                  {cat}
+                </div>
+              ))}
+            </div>
+          )}
+          {/* <div className="border-t pt-3 font-semibold">Sort By</div> */}
+          <div
+            onClick={() => setDrawerFilterOpen(!drawerFilterOpen)}
+            className="flex justify-between items-center cursor-pointer font-semibold border-t pt-3"
+          >
+            Filter
+            <span>{drawerFilterOpen ? "▲" : "▼"}</span>
+          </div>
+
+          {drawerFilterOpen && (
+            <div className="pl-3 space-y-1">
+              <div
+                onClick={() => {
+                  setSortBy("lowToHigh");
+                  setOpenDrawer(false);
+                }}
+                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                className={`
+    px-4 py-2 cursor-pointer text-sm
+    ${
+      sortBy === "lowToHigh"
+        ? "bg-green-500 text-white font-semibold"
+        : "hover:bg-gray-100"
+    }
+  `}
+              >
+                Price: Low → High
+              </div>
+
+              <div
+                onClick={() => {
+                  setSortBy("highToLow");
+                  setOpenDrawer(false);
+                }}
+                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                className={`px-4 py-2 cursor-pointer text-sm
+        ${
+          sortBy === "highToLow"
+            ? "bg-green-500 text-white font-semibold"
+            : "hover:bg-gray-100"
+        }
+      `}
+              >
+                Price: High → Low
+              </div>
+
+              <div
+                onClick={() => {
+                  setSortBy("aToZ");
+                  setOpenDrawer(false);
+                }}
+                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                className={`px-4 py-2 cursor-pointer text-sm
+        ${
+          sortBy === "    A → Z"
+            ? "bg-green-500 text-white font-semibold"
+            : "hover:bg-gray-100"
+        }
+      `}
+              >
+                A → Z
+              </div>
+
+              <div
+                onClick={() => {
+                  setSortBy("zToA");
+                  setOpenDrawer(false);
+                }}
+                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                className={`px-4 py-2 cursor-pointer text-sm
+        ${
+          sortBy === "   Z → A"
+            ? "bg-green-500 text-white font-semibold"
+            : "hover:bg-gray-100"
+        }
+      `}
+              >
+                Z → A
+              </div>
+            </div>
+          )}
+
+          <div
+            onClick={() => setDrawerMoreOpen(!drawerMoreOpen)}
+            className="flex justify-between items-center cursor-pointer font-semibold border-t pt-3"
+          >
+            More
+            <span>{drawerMoreOpen ? "▲" : "▼"}</span>
+          </div>
+
+          {drawerMoreOpen && (
+            <div className="pl-3 space-y-1">
+              <div
+                onClick={() => {
+                  navigate("/AddProduct");
+                  setOpenDrawer(false);
+                }}
+                className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 rounded"
+              >
+                Add Product
+              </div>
+
+              <div
+                onClick={() => {
+                  navigate("/UpdateProduct");
+                  setOpenDrawer(false);
+                }}
+                className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 rounded"
+              >
+                Update Product
+              </div>
+
+              <div
+                onClick={() => {
+                  navigate("/DeleteProduct");
+                  setOpenDrawer(false);
+                }}
+                className="px-4 py-2 cursor-pointer text-sm text-red-600 hover:bg-red-100 rounded"
+              >
+                Delete Product
+              </div>
+            </div>
+          )}
+          <div
+            onClick={() => {
+              dispatch(logout());
+              navigate("/login");
+            }}
+            className="cursor-pointer text-red-600 hover:bg-red-100 p-2 rounded"
+          >
+            Logout
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center px-4 sm:px-6 py-3 sm:py-4 bg-black">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setOpenDrawer(true)}
+            className="text-white text-2xl"
+          >
+            ☰
+          </button>
+
+          <img
+            src="/smtlabs.jpg"
+            alt="logo"
+            className="h-8 w-auto cursor-pointer  justify-start"
+          />
+        </div>
+
+        {/* <button
               onClick={() => navigate("/all")}
               className="text-white font-semibold hover:underline"
             >
@@ -172,7 +404,14 @@ export default function Home() {
                       setSortBy("lowToHigh");
                       setFilter(false);
                     }}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    className={`
+    px-4 py-2 cursor-pointer text-sm
+    ${
+      sortBy === "lowToHigh"
+        ? "bg-green-500 text-white font-semibold"
+        : "hover:bg-gray-100"
+    }
+  `}
                   >
                     Price: Low → High
                   </div>
@@ -182,7 +421,13 @@ export default function Home() {
                       setSortBy("highToLow");
                       setFilter(false);
                     }}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    className={`px-4 py-2 cursor-pointer text-sm
+        ${
+          sortBy === "highToLow"
+            ? "bg-green-500 text-white font-semibold"
+            : "hover:bg-gray-100"
+        }
+      `}
                   >
                     Price: High → Low
                   </div>
@@ -192,7 +437,13 @@ export default function Home() {
                       setSortBy("aToZ");
                       setFilter(false);
                     }}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    className={`px-4 py-2 cursor-pointer text-sm
+        ${
+          sortBy === "aToZ"
+            ? "bg-green-500 text-white font-semibold"
+            : "hover:bg-gray-100"
+        }
+      `}
                   >
                     A → Z
                   </div>
@@ -202,7 +453,13 @@ export default function Home() {
                       setSortBy("zToA");
                       setFilter(false);
                     }}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    className={`px-4 py-2 cursor-pointer text-sm
+        ${
+          sortBy === "zToA"
+            ? "bg-green-500 text-white font-semibold"
+            : "hover:bg-gray-100"
+        }
+      `}
                   >
                     Z → A
                   </div>
@@ -242,7 +499,14 @@ export default function Home() {
                         setSelectedcategory(cat);
                         setShowcategory(false);
                       }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm capitalize"
+                      className={`
+    px-4 py-2 cursor-pointer text-sm capitalize
+    ${
+      selectedcategory === cat
+        ? "bg-green-500 text-white font-semibold"
+        : "hover:bg-gray-100 text-black"
+    }
+  `}
                     >
                       {cat}
                     </div>
@@ -293,8 +557,8 @@ export default function Home() {
             >
               Logout
             </button>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
 
         <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[65vh] lg:h-[70vh] overflow-hidden bg-white">
           <img

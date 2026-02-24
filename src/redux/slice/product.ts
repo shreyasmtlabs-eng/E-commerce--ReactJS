@@ -34,10 +34,8 @@ export const fetchProducts = createAsyncThunk("products/fetch", async () => {
 export const updateAPIProducts = createAsyncThunk(
   "products/updateApi",
   async (product: Product) => {
-    
     // const res = await api.put(`/products/${product.id , product}`);
     const res = await api.put(`/products/${product.id}`, product);
-
     console.log(" UPDATE API:>>>>>>>", res.data);
     return res.data;
   }
@@ -60,7 +58,6 @@ const productSlice = createSlice({
   reducers: {
      addProduct: (state, action: PayloadAction<Product>) => {
         console.log("Redux add:>>>>", action.payload);
-
       state.products.unshift(action.payload);
     },
 
@@ -90,12 +87,10 @@ const productSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
   const customProducts = state.products.filter(p => p.id > 1000);
-        
+    
 
        // state.products = action.payload;
- state.products = [...action.payload, ...customProducts];
-     
-
+ state.products = [...customProducts,...action.payload,];
       })
       .addCase(fetchProducts.rejected, (state) => {
         state.loading = false;

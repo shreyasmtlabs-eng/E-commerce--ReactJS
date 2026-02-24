@@ -2,7 +2,6 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store/store";
 export default function ProductDetails() {
-  // const { state: product } = useLocation();
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();

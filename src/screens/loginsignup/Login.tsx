@@ -15,9 +15,11 @@ const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showpassword, setShowPassword] = useState(false);
+
   const dispatch = useDispatch<AppDispatch>();
   const isAuth = useSelector((state: RootState) => state.auth.isAuthenticated);
   const users = useSelector((state: RootState) => state.auth.users);
+
   const {
     register,
     handleSubmit,
@@ -116,7 +118,6 @@ const Login = () => {
           </h1>
 
           <h2 className="text-xl font-semibold text-gray-800 mt-2">Login</h2>
-
           <p className="text-sm text-gray-500 mt-1">
             Welcome back! Sign in to continue.
           </p>
@@ -171,7 +172,6 @@ const Login = () => {
             {errors.password?.message}
           </p>
 
-          {/* correct this is english */}
           <div className="flex items-center justify-end text-sm">
             <button type="button" className="text-purple-600 hover:underline">
               Forgot password?

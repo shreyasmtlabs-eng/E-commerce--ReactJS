@@ -9,7 +9,6 @@ export default function AddProduct() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-
   const [form, setForm] = useState({
     title: "",
     price: "",

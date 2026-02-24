@@ -2,8 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slice/auth";
 import productReducer from "../slice/product";
 
-
-
 const loadState = () => {
   try {
     const serialized = localStorage.getItem("reduxState");
@@ -21,8 +19,6 @@ const saveState = (state: RootState) => {
     console.error("Failed to save state", err);
   }
 };
-
-
 
 export const store = configureStore({
   reducer: {
