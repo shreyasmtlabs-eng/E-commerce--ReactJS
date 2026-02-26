@@ -34,7 +34,7 @@ export const fetchProducts = createAsyncThunk("products/fetch", async () => {
 export const updateAPIProducts = createAsyncThunk(
   "products/updateApi",
   async (product: Product) => {
-    // const res = await api.put(`/products/${product.id , product}`);
+
     const res = await api.put(`/products/${product.id}`, product);
     console.log(" UPDATE API:>>>>>>>", res.data);
     return res.data;
@@ -89,7 +89,7 @@ const productSlice = createSlice({
   const customProducts = state.products.filter(p => p.id > 1000);
     
 
-       // state.products = action.payload;
+      
  state.products = [...customProducts,...action.payload,];
       })
       .addCase(fetchProducts.rejected, (state) => {

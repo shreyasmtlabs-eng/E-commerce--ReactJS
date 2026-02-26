@@ -1,7 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slice/auth";
 import productReducer from "../slice/product";
-
+import cartReducer from "../slice/cart";
+ 
 const loadState = () => {
   try {
     const serialized = localStorage.getItem("reduxState");
@@ -24,6 +25,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     products: productReducer,
+    cart: cartReducer,
   },
 
 preloadedState: loadState(),

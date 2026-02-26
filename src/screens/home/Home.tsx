@@ -1,10 +1,21 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../../redux/slice/product";
 import type { RootState, AppDispatch } from "../../redux/store/store";
 import { logout } from "../../redux/slice/auth";
 import { useLocation } from "react-router-dom";
+import { addToCart } from "../../redux/slice/cart";
+
+import {
+  ShoppingCart,
+  ChevronDown,
+  ChevronUp,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -17,20 +28,23 @@ export default function Home() {
   // const [showcategory, setShowcategory] = useState(false);
   // const [showMore, setShowMore] = useState(false);
   // const [filter, setFilter] = useState(false);
+
   const [sortBy, setSortBy] = useState("");
   // const filterRef = useRef<HTMLDivElement>(null);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [drawerFilterOpen, setDrawerFilterOpen] = useState(false);
   const [drawerMoreOpen, setDrawerMoreOpen] = useState(false);
   const [drawerCategoryOpen, setDrawerCategoryOpen] = useState(false);
-  // const { products, loading } = useSelector(
-  //   (state: RootState) => state.products,
-  // );
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const { products: reduxProducts, loading } = useSelector(
     (state: RootState) => state.products,
   );
   console.log("Redux Products API Response:>>>>>>", reduxProducts);
+
+  const cartCount = useSelector((state: RootState) =>
+    state.cart.cartItem.reduce((total, item) => total + item.quantity, 0),
+  );
 
   const allProducts = [...reduxProducts];
   // const banners = [
@@ -41,11 +55,6 @@ export default function Home() {
   //   "/myImg6.png",
   //   "/lipstick.webp",
   // ];
-
-  // console.log(
-  //   "All API Categories:>>>>",
-  //   allProducts.map((p) => p.category),
-  // );
 
   const bannerImages = reduxProducts.slice(0, 20).map((p) => p.image);
   const categories = [
@@ -93,12 +102,12 @@ export default function Home() {
     // }
   }, [dispatch]);
 
-  // useEffect(() => {
-  //   const timer = setInterval(() => {
-  //     setIndex((prev) => (prev + 1) % bannerImages.length);
-  //   }, 2500);
-  //   return () => clearInterval(timer);
-  // }, [bannerImages.length]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % bannerImages.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [bannerImages.length]);
 
   // useEffect(() => {
   //   const handleClickOutside = (event: MouseEvent) => {
@@ -131,32 +140,27 @@ export default function Home() {
     }
   }, [location]);
 
-  // const handleLogout = () => {
-  //   dispatch(logout());
-  //   console.log(" state cleared:>>>>>>>");
-  //   navigate("/login", { replace: true });
-  // };
-
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      {/* Drawer Overlay */}
       {openDrawer && (
         <div
           onClick={() => setOpenDrawer(false)}
-          className="fixed inset-0 bg-black/40 z-40"
+          className="fixed inset-0 bg-black/40  backdrop-blur-sm z-40 transition-opacity duration-300"
         ></div>
       )}
 
-      {/* Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300
+        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out
             overflow-y-auto
-  ${openDrawer ? "translate-x-0" : "-translate-x-full"}`}
+  ${openDrawer ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`}
       >
-        <div className="flex justify-between items-center p-4 border-b">
+        <div className="flex justify-between items-center p-4 ">
           <h2 className="font-bold text-lg">Menu</h2>
-          <button onClick={() => setOpenDrawer(false)} className="text-xl">
-            ✕
+          <button
+            onClick={() => setOpenDrawer(false)}
+            className="text-xl transition-transform hover:rotate-90 duration-200"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -194,10 +198,15 @@ export default function Home() {
           {/* <div className="border-t pt-3 font-semibold">Categories</div> */}
           <div
             onClick={() => setDrawerCategoryOpen(!drawerCategoryOpen)}
-            className="flex justify-between items-center cursor-pointer font-semibold border-t pt-3"
+            className="flex justify-between items-center cursor-pointer font-semibold p-2 pt-3"
           >
             Category
-            <span>{drawerCategoryOpen ? "▲" : "▼"}</span>
+            {drawerCategoryOpen ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+            {/* <span>{drawerCategoryOpen ? "▲" : "▼"}</span> */}
           </div>
 
           {drawerCategoryOpen && (
@@ -227,10 +236,15 @@ export default function Home() {
           {/* <div className="border-t pt-3 font-semibold">Sort By</div> */}
           <div
             onClick={() => setDrawerFilterOpen(!drawerFilterOpen)}
-            className="flex justify-between items-center cursor-pointer font-semibold border-t pt-3"
+            className="flex justify-between items-center cursor-pointer font-semibold p-2 pt-3"
           >
+            {/* <span>{drawerFilterOpen ? "▲" : "▼"}</span> */}
             Filter
-            <span>{drawerFilterOpen ? "▲" : "▼"}</span>
+            {drawerFilterOpen ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
           </div>
 
           {drawerFilterOpen && (
@@ -240,7 +254,6 @@ export default function Home() {
                   setSortBy("lowToHigh");
                   setOpenDrawer(false);
                 }}
-                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
                 className={`
     px-4 py-2 cursor-pointer text-sm
     ${
@@ -308,10 +321,15 @@ export default function Home() {
 
           <div
             onClick={() => setDrawerMoreOpen(!drawerMoreOpen)}
-            className="flex justify-between items-center cursor-pointer font-semibold border-t pt-3"
+            className="flex justify-between items-center cursor-pointer font-semibold p-2 pt-3"
           >
             More
-            <span>{drawerMoreOpen ? "▲" : "▼"}</span>
+            {/* <span>{drawerMoreOpen ? "▲" : "▼"}</span> */}
+            {drawerMoreOpen ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
           </div>
 
           {drawerMoreOpen && (
@@ -348,10 +366,11 @@ export default function Home() {
             </div>
           )}
           <div
-            onClick={() => {
-              dispatch(logout());
-              navigate("/login");
-            }}
+            // onClick={() => {
+            //   dispatch(logout());
+            //   navigate("/login");
+            // }}
+            onClick={() => setShowLogoutModal(true)}
             className="cursor-pointer text-red-600 hover:bg-red-100 p-2 rounded"
           >
             Logout
@@ -365,200 +384,28 @@ export default function Home() {
             onClick={() => setOpenDrawer(true)}
             className="text-white text-2xl"
           >
-            ☰
+            <Menu className="w-6 h-6" />
           </button>
 
           <img
             src="/smtlabs.jpg"
             alt="logo"
-            className="h-8 w-auto cursor-pointer  justify-start"
+            className="h-8 w-auto cursor-pointer  justify-start mb-2"
           />
         </div>
 
-        {/* <button
-              onClick={() => navigate("/all")}
-              className="text-white font-semibold hover:underline"
-            >
-              All
-            </button>
+        <div
+          onClick={() => navigate("/cart")}
+          className="relative cursor-pointer ml-auto"
+        >
+          <ShoppingCart className="text-white w-6 h-6" />
 
-            <button
-              onClick={() => navigate("/about")}
-              className="text-white font-semibold hover:underline"
-            >
-              About
-            </button>
-
-            <div ref={filterRef} className="relative">
-              <button
-                onClick={() => setFilter(!filter)}
-                className="text-white font-semibold hover:underline mt-1"
-              >
-                Filter
-              </button>
-
-              {filter && (
-                <div className="absolute left-0 top-full mt-2 bg-white text-black shadow-lg rounded w-56 z-50">
-                  <div
-                    onClick={() => {
-                      setSortBy("lowToHigh");
-                      setFilter(false);
-                    }}
-                    className={`
-    px-4 py-2 cursor-pointer text-sm
-    ${
-      sortBy === "lowToHigh"
-        ? "bg-green-500 text-white font-semibold"
-        : "hover:bg-gray-100"
-    }
-  `}
-                  >
-                    Price: Low → High
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setSortBy("highToLow");
-                      setFilter(false);
-                    }}
-                    className={`px-4 py-2 cursor-pointer text-sm
-        ${
-          sortBy === "highToLow"
-            ? "bg-green-500 text-white font-semibold"
-            : "hover:bg-gray-100"
-        }
-      `}
-                  >
-                    Price: High → Low
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setSortBy("aToZ");
-                      setFilter(false);
-                    }}
-                    className={`px-4 py-2 cursor-pointer text-sm
-        ${
-          sortBy === "aToZ"
-            ? "bg-green-500 text-white font-semibold"
-            : "hover:bg-gray-100"
-        }
-      `}
-                  >
-                    A → Z
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setSortBy("zToA");
-                      setFilter(false);
-                    }}
-                    className={`px-4 py-2 cursor-pointer text-sm
-        ${
-          sortBy === "zToA"
-            ? "bg-green-500 text-white font-semibold"
-            : "hover:bg-gray-100"
-        }
-      `}
-                  >
-                    Z → A
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setSortBy("");
-                      setFilter(false);
-                    }}
-                    className="px-4 py-2 hover:bg-red-100 cursor-pointer text-sm text-red-600"
-                  >
-                    Clear Filter
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div
-              ref={categoryRef}
-              className="relative"
-              // onMouseEnter={() => setShowcategory(true)}
-              // onMouseLeave={() => setShowcategory(false)}
-            >
-              <button
-                onClick={() => setShowcategory(!showcategory)}
-                className="text-white font-semibold hover:underline mt-1"
-              >
-                Category
-              </button>
-
-              {showcategory && (
-                <div className="absolute left-0 top-full mt-2 bg-white text-black shadow-lg rounded w-56 z-50">
-                  {categories.map((cat) => (
-                    <div
-                      key={cat}
-                      onClick={() => {
-                        setSelectedcategory(cat);
-                        setShowcategory(false);
-                      }}
-                      className={`
-    px-4 py-2 cursor-pointer text-sm capitalize
-    ${
-      selectedcategory === cat
-        ? "bg-green-500 text-white font-semibold"
-        : "hover:bg-gray-100 text-black"
-    }
-  `}
-                    >
-                      {cat}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-6">
-            <div ref={moreRef} className="relative">
-              <button
-                onClick={() => setShowMore(!showMore)}
-                className="text-white font-semibold hover:underline mt-1.5"
-              >
-                More
-              </button>
-
-              {showMore && (
-                <div className="absolute left-0 top-full mt-2 bg-white shadow-lg rounded w-52 z-50">
-                  <div
-                    onClick={() => navigate("/AddProduct")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                  >
-                    Add Product
-                  </div>
-
-                  <div
-                    onClick={() => navigate("/UpdateProduct")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                  >
-                    Update Product
-                  </div>
-
-                  <div
-                    onClick={() => navigate("/DeleteProduct")}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-red-600"
-                  >
-                    Delete Product
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="text-white font-semibold hover:underline mt-1"
-            >
-              Logout
-            </button>
-          </div> */}
-        {/* </div> */}
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+              {cartCount}
+            </span>
+          )}
+        </div>
 
         <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[65vh] lg:h-[70vh] overflow-hidden bg-white">
           <img
@@ -571,16 +418,16 @@ export default function Home() {
             onClick={() =>
               setIndex(index === 0 ? bannerImages.length - 1 : index - 1)
             }
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-4 py-2 text-2xl rounded-full mt-2"
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-2 py-2 text-2xl rounded-full mt-2"
           >
-            ‹
+            <ChevronLeft className="w-4 h-5 " />
           </button>
 
           <button
             onClick={() => setIndex((index + 1) % bannerImages.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-4 py-2 text-2xl rounded-full"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-2 py-2 text-2xl rounded-full"
           >
-            ›
+            <ChevronRight className="w-4 h-5 " />
           </button>
         </div>
 
@@ -615,8 +462,20 @@ export default function Home() {
                       {p.title}
                     </h3>
 
-                    <div className="mt-1">
+                    <div className="flex justify-between items-center mt-1 ">
                       <span className="text-lg font-bold">${p.price}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dispatch(addToCart(p));
+                        }}
+                        className="bg-blue-600 text-white text-xs px-2 py-0 h-5 rounded justify-between
+                         transition-all duration-150
+   
+    active:bg-green-700"
+                      >
+                        Add to cart
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -698,6 +557,38 @@ export default function Home() {
           </div>
         </footer>
       </div>
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-lg w-80 shadow-lg">
+            <h3 className="bg-white text-xs mt-1 py-2 font-semibold">
+              Confirm Logout
+            </h3>
+
+            <p className="text-xs font-normal mb-3">
+              Are you sure you want to logout?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="px-3 py-1 border rounded text-xs bg-red-500 text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  dispatch(logout());
+                  navigate("/login");
+                }}
+                className="px-3 py-1 border rounded text-xs bg-red-500 text-white"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
