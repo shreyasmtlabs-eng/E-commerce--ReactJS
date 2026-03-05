@@ -30,7 +30,6 @@ export default function Cart() {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-sm font-bold mb-6">My Cart</h1>
-
       <div className="bg-white p-5 rounded-lg shadow grid grid-cols-3 gap-6">
         <div className="col-span-2 h-90 overflow-y-scroll">
           {cartItem.map((item) => (
@@ -90,7 +89,6 @@ export default function Cart() {
 
         <div className="border rounded-lg p-5 h-fit sticky top-6">
           <h2 className="text-sm font-bold mb-4">Bill Details</h2>
-
           <div className="flex justify-between text-sm mb-2">
             <span>Total amount:</span>
             <span>₹{totalAmount.toFixed(2)}</span>

@@ -8,7 +8,7 @@ import { api } from "../../utils/api/api";
   price: number;
   image: string;
   category: string;
-    description?: string;
+  description?: string;
 }
 
 interface ProductState {
@@ -88,7 +88,6 @@ const productSlice = createSlice({
         state.loading = false;
   const customProducts = state.products.filter(p => p.id > 1000);
     
-
       
  state.products = [...customProducts,...action.payload,];
       })
