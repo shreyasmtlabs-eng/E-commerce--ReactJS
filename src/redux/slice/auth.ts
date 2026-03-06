@@ -1,6 +1,6 @@
 import { createSlice} from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-
+import Cookies from "js-cookie";
 interface User {
   firstname: string;
   lastname: string;
@@ -69,6 +69,7 @@ const authSlice = createSlice({
     },
 
     logout: (state) => {
+        Cookies.remove("token");
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;

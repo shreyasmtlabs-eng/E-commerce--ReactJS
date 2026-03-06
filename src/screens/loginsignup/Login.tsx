@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { useSelector, useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/slice/auth";
 import type { RootState, AppDispatch } from "../../redux/store/store";
+import Cookies from "js-cookie";
 
 interface LoginFormData {
   email: string;
@@ -70,6 +71,7 @@ const Login = () => {
       const result = await response.json();
 
       if (result?.token) {
+        Cookies.set("token", result.token, { expires: 1 });
         const foundUser = users.find(
           (u) => u.email === data.email && u.password === data.password,
         );
