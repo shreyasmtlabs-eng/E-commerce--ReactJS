@@ -44,7 +44,6 @@ export default function Home() {
 
   const user = useSelector((state: RootState) => state.auth.user);
   const userGender = user?.gender;
-
   const bannerImages = products.slice(0, 10).map((p) => p.image);
 
   useEffect(() => {
@@ -73,38 +72,11 @@ export default function Home() {
     }
   }, [userGender]);
 
-  // const filteredProducts =
-  //   selectedcategory === "all"
-  //     ? products.filter((p) => {
-  //         if (userGender === "female") {
-  //           return (
-  //             p.category === "women's clothing" ||
-  //             p.category === "jewelery" ||
-  //             p.category === "electronics"
-  //           );
-  //         }
-
-  //         if (userGender === "male") {
-  //           return (
-  //             p.category === "men's clothing" || p.category === "electronics"
-  //           );
-  //         }
-
-  //         return true;
-  //       })
-  //     : products.filter(
-  //         (p) =>
-  //           p.category?.toLowerCase().trim() ===
-  //           selectedcategory.toLowerCase().trim(),
-  //       );
-
   const filteredProducts = products.filter((p) => {
     const category = p.category?.toLowerCase().trim();
 
     if (category === "electronics") {
-      if (selectedcategory === "all" || selectedcategory === "electronics") {
-        return true;
-      }
+      return true;
     }
 
     if (userGender === "female") {
@@ -115,7 +87,8 @@ export default function Home() {
           category === "electronics"
         );
       }
-      return category === selectedcategory;
+      // return category === selectedcategory;
+      return category === selectedcategory || category === "jewelery";
     }
 
     if (userGender === "male") {
@@ -127,11 +100,6 @@ export default function Home() {
 
     return true;
   });
-  // : products.filter(
-  //           (p) =>
-  //             p.category?.toLowerCase().trim() ===
-  //             selectedcategory.toLowerCase().trim(),
-  //         );
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "lowToHigh") return a.price - b.price;
