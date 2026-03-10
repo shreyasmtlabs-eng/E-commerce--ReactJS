@@ -1,18 +1,50 @@
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState, AppDispatch } from "../../redux/store/store";
-import { deleteProduct, deleteAPIProducts } from "../../redux/slice/product";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Product } from "../../redux/slice/product";
+import { getProductsApi } from "../../utils/api/productsApi";
+import { api } from "../../utils/api/api";
+
+type Product = {
+  id: number;
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+  image: string;
+};
 
 export default function DeleteProduct() {
-  const { products } = useSelector((state: RootState) => state.products);
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
   const [deleteProductItem, setDeleteProductItem] = useState<Product | null>(
     null,
   );
+
+  const { data: products = [], isLoading } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: getProductsApi,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/products/${id}`),
+    onSuccess: (_, id) => {
+      const stored = JSON.parse(localStorage.getItem("customProducts") || "[]");
+      const updated = stored.filter((p: any) => p.id !== id);
+
+      localStorage.setItem("customProducts", JSON.stringify(updated));
+
+      queryClient.setQueryData(["products"], (old: any[]) =>
+        old.filter((p) => p.id !== id),
+      );
+
+      alert("Product Deleted Successfully");
+      navigate("/home");
+    },
+
+    onError: () => {
+      alert("Failed to delete product");
+    },
+  });
 
   const handleDeleteClick = (product: Product) => {
     setDeleteProductItem(product);
@@ -20,14 +52,12 @@ export default function DeleteProduct() {
 
   const handleConfirmDelete = () => {
     if (!deleteProductItem) return;
-    console.log(" Delete :>>>>>>", deleteProductItem.id);
-    dispatch(deleteProduct(deleteProductItem.id));
-    dispatch(deleteAPIProducts(deleteProductItem.id));
-
-    alert("Product Deleted Successfully 🗑️");
-    setDeleteProductItem(null);
-    navigate("/home");
+    deleteMutation.mutate(deleteProductItem.id);
   };
+
+  if (isLoading) {
+    return <p className="text-center mt-10">Loading Products...</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -51,7 +81,7 @@ export default function DeleteProduct() {
               {p.title}
             </h3>
 
-            <p className="text-lg font-bold mt-1">₹{p.price}</p>
+            <p className="text-lg font-bold mt-1">${p.price}</p>
 
             <button
               onClick={() => handleDeleteClick(p)}
@@ -75,9 +105,10 @@ export default function DeleteProduct() {
             <div className="flex gap-4">
               <button
                 onClick={handleConfirmDelete}
+                disabled={deleteMutation.isPending}
                 className="flex-1 bg-red-600 text-white py-2 rounded hover:bg-red-700"
               >
-                Yes, Delete
+                {deleteMutation.isPending ? "Deleting..." : "Yes, Delete"}
               </button>
 
               <button

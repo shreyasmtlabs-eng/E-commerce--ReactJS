@@ -12,10 +12,12 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-// import Cookies from "js-cookie";
 import { logout } from "./redux/slice/auth";
 import type { AppDispatch } from "./redux/store/store";
 import AppRoutes from "./routes/AppRoutes";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -41,7 +43,6 @@ function App() {
       );
     };
 
-    // user activity detect
     window.addEventListener("mousemove", resetTimer);
     window.addEventListener("keydown", resetTimer);
     window.addEventListener("click", resetTimer);
@@ -57,7 +58,11 @@ function App() {
     };
   }, [dispatch]);
 
-  return <AppRoutes />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppRoutes />;
+    </QueryClientProvider>
+  );
 }
 
 export default App;

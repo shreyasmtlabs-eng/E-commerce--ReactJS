@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../../redux/slice/product";
+import { useQuery } from "@tanstack/react-query";
+import { getProductsApi } from "../../utils/api/productsApi";
 import type { RootState, AppDispatch } from "../../redux/store/store";
 import { logout } from "../../redux/slice/auth";
-import { useLocation } from "react-router-dom";
 import { addToCart } from "../../redux/slice/cart";
 
 import {
@@ -20,118 +20,126 @@ import {
 export default function Home() {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  // const categoryRef = useRef<HTMLDivElement>(null);
-  // const moreRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const [index, setIndex] = useState(0);
   const [selectedcategory, setSelectedcategory] = useState("all");
-  // const [showcategory, setShowcategory] = useState(false);
-  // const [showMore, setShowMore] = useState(false);
-  // const [filter, setFilter] = useState(false);
-
   const [sortBy, setSortBy] = useState("");
-  // const filterRef = useRef<HTMLDivElement>(null);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [drawerFilterOpen, setDrawerFilterOpen] = useState(false);
   const [drawerMoreOpen, setDrawerMoreOpen] = useState(false);
   const [drawerCategoryOpen, setDrawerCategoryOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const { products: reduxProducts, loading } = useSelector(
-    (state: RootState) => state.products,
-  );
-  console.log("Redux Products API Response:>>>>>>", reduxProducts);
+  const { data: products = [], isLoading: loading } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProductsApi,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
   const cartCount = useSelector((state: RootState) =>
     state.cart.cartItem.reduce((total, item) => total + item.quantity, 0),
   );
 
-  const allProducts = [...reduxProducts];
-  // const banners = [
-  //   "/myImg2.png",
-  //   "/myImg3.png",
-  //   "/myImg4.png",
-  //   "/myImg5.png",
-  //   "/myImg6.png",
-  //   "/lipstick.webp",
-  // ];
+  const user = useSelector((state: RootState) => state.auth.user);
+  const userGender = user?.gender;
 
-  const bannerImages = reduxProducts.slice(0, 20).map((p) => p.image);
+  const bannerImages = products.slice(0, 10).map((p) => p.image);
+
+  useEffect(() => {
+    if (bannerImages.length === 0) return;
+
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % bannerImages.length);
+    }, 2500);
+
+    return () => clearInterval(timer);
+  }, [bannerImages.length]);
+
   const categories = [
     "all",
     "women's clothing",
     "men's clothing",
-    "men",
-    "women",
     "jewelery",
     "electronics",
-    "footwear",
   ];
 
-  // const filterProducts =
+  useEffect(() => {
+    if (userGender === "female") {
+      setSelectedcategory("women's clothing");
+    } else if (userGender === "male") {
+      setSelectedcategory("men's clothing");
+    }
+  }, [userGender]);
+
+  // const filteredProducts =
   //   selectedcategory === "all"
-  //     ? allProducts
-  //     : allProducts.filter((p) => p.category === selectedcategory);
+  //     ? products.filter((p) => {
+  //         if (userGender === "female") {
+  //           return (
+  //             p.category === "women's clothing" ||
+  //             p.category === "jewelery" ||
+  //             p.category === "electronics"
+  //           );
+  //         }
 
-  // useEffect(() => {
-  //   dispatch(fetchProducts());
-  // }, [dispatch]);
+  //         if (userGender === "male") {
+  //           return (
+  //             p.category === "men's clothing" || p.category === "electronics"
+  //           );
+  //         }
 
-  const filterProducts =
-    selectedcategory === "all"
-      ? [...allProducts]
-      : allProducts.filter(
-          (p) =>
-            p.category.toLowerCase().trim() ===
-            selectedcategory.toLowerCase().trim(),
+  //         return true;
+  //       })
+  //     : products.filter(
+  //         (p) =>
+  //           p.category?.toLowerCase().trim() ===
+  //           selectedcategory.toLowerCase().trim(),
+  //       );
+
+  const filteredProducts = products.filter((p) => {
+    const category = p.category?.toLowerCase().trim();
+
+    if (category === "electronics") {
+      if (selectedcategory === "all" || selectedcategory === "electronics") {
+        return true;
+      }
+    }
+
+    if (userGender === "female") {
+      if (selectedcategory === "all") {
+        return (
+          category === "women's clothing" ||
+          category === "jewelery" ||
+          category === "electronics"
         );
-  console.log("Filtered Products:>>>>", filterProducts);
+      }
+      return category === selectedcategory;
+    }
 
-  const sortedProducts = [...filterProducts].sort((a, b) => {
+    if (userGender === "male") {
+      if (selectedcategory === "all") {
+        return category === "men's clothing" || category === "electronics";
+      }
+      return category === selectedcategory;
+    }
+
+    return true;
+  });
+  // : products.filter(
+  //           (p) =>
+  //             p.category?.toLowerCase().trim() ===
+  //             selectedcategory.toLowerCase().trim(),
+  //         );
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "lowToHigh") return a.price - b.price;
     if (sortBy === "highToLow") return b.price - a.price;
     if (sortBy === "aToZ") return a.title.localeCompare(b.title);
     if (sortBy === "zToA") return b.title.localeCompare(a.title);
     return 0;
   });
-  console.log("Sorted Products:>>>>", sortedProducts);
-
-  useEffect(() => {
-    // if (reduxProducts.length === 0) {
-    dispatch(fetchProducts());
-    // }
-  }, [dispatch]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % bannerImages.length);
-    }, 2500);
-    return () => clearInterval(timer);
-  }, [bannerImages.length]);
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event: MouseEvent) => {
-  //     if (
-  //       categoryRef.current &&
-  //       !categoryRef.current.contains(event.target as Node)
-  //     ) {
-  //       setShowcategory(false);
-  //     }
-
-  //     if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
-  //       setShowMore(false);
-  //     }
-  //     if (
-  //       filterRef.current &&
-  //       !filterRef.current.contains(event.target as Node)
-  //     ) {
-  //       setFilter(false);
-  //     }
-  //   };
-
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, []);
 
   useEffect(() => {
     if (location.state?.message) {
@@ -145,21 +153,18 @@ export default function Home() {
       {openDrawer && (
         <div
           onClick={() => setOpenDrawer(false)}
-          className="fixed inset-0 bg-black/40  backdrop-blur-sm z-40 transition-opacity duration-300"
-        ></div>
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+        />
       )}
 
       <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300 ease-in-out
-            overflow-y-auto
-  ${openDrawer ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"}`}
+        className={`fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform
+        ${openDrawer ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex justify-between items-center p-4 ">
-          <h2 className="font-bold text-lg">Menu</h2>
-          <button
-            onClick={() => setOpenDrawer(false)}
-            className="text-xl transition-transform hover:rotate-90 duration-200"
-          >
+        <div className="flex justify-between p-4">
+          <h2 className="font-semibold">Menu</h2>
+
+          <button onClick={() => setOpenDrawer(false)}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -176,41 +181,15 @@ export default function Home() {
           </div>
 
           <div
-            onClick={() => {
-              navigate("/all");
-              setOpenDrawer(false);
-            }}
-            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-          >
-            All Products
-          </div>
-
-          <div
-            onClick={() => {
-              navigate("/about");
-              setOpenDrawer(false);
-            }}
-            className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-          >
-            About
-          </div>
-
-          {/* <div className="border-t pt-3 font-semibold">Categories</div> */}
-          <div
             onClick={() => setDrawerCategoryOpen(!drawerCategoryOpen)}
-            className="flex justify-between items-center cursor-pointer font-semibold p-2 pt-3"
+            className="flex justify-between cursor-pointer p-2 font-normal"
           >
             Category
-            {drawerCategoryOpen ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-            {/* <span>{drawerCategoryOpen ? "▲" : "▼"}</span> */}
+            {drawerCategoryOpen ? <ChevronUp /> : <ChevronDown />}
           </div>
 
           {drawerCategoryOpen && (
-            <div className="pl-3 space-y-1">
+            <div className="space-y-1">
               {categories.map((cat) => (
                 <div
                   key={cat}
@@ -218,101 +197,69 @@ export default function Home() {
                     setSelectedcategory(cat);
                     setOpenDrawer(false);
                   }}
-                  // className="capitalize cursor-pointer hover:bg-gray-100 p-2 rounded"
-                  className={`
-    px-4 py-2 cursor-pointer text-sm capitalize
-    ${
-      selectedcategory === cat
-        ? "bg-green-500 text-white font-semibold"
-        : "hover:bg-gray-100 text-black"
-    }
-  `}
+                  className={`px-3 py-2 cursor-pointer capitalize
+                  ${
+                    selectedcategory === cat
+                      ? "bg-green-500 text-white"
+                      : "hover:bg-gray-100"
+                  }`}
                 >
                   {cat}
                 </div>
               ))}
             </div>
           )}
-          {/* <div className="border-t pt-3 font-semibold">Sort By</div> */}
+
           <div
             onClick={() => setDrawerFilterOpen(!drawerFilterOpen)}
-            className="flex justify-between items-center cursor-pointer font-semibold p-2 pt-3"
+            className="flex justify-between cursor-pointer p-2 font-normal"
           >
-            {/* <span>{drawerFilterOpen ? "▲" : "▼"}</span> */}
             Filter
-            {drawerFilterOpen ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
+            {drawerFilterOpen ? <ChevronUp /> : <ChevronDown />}
           </div>
 
           {drawerFilterOpen && (
-            <div className="pl-3 space-y-1">
+            <div className="space-y-1">
               <div
-                onClick={() => {
-                  setSortBy("lowToHigh");
-                  setOpenDrawer(false);
-                }}
-                className={`
-    px-4 py-2 cursor-pointer text-sm
-    ${
-      sortBy === "lowToHigh"
-        ? "bg-green-500 text-white font-semibold"
-        : "hover:bg-gray-100"
-    }
-  `}
+                onClick={() => setSortBy("lowToHigh")}
+                className={`px-3 py-2 cursor-pointer ${
+                  sortBy === "lowToHigh"
+                    ? "bg-green-500 text-white"
+                    : "hover:bg-gray-100"
+                }`}
               >
-                Price: Low → High
+                Price Low → High
               </div>
 
               <div
-                onClick={() => {
-                  setSortBy("highToLow");
-                  setOpenDrawer(false);
-                }}
-                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                className={`px-4 py-2 cursor-pointer text-sm
-        ${
-          sortBy === "highToLow"
-            ? "bg-green-500 text-white font-semibold"
-            : "hover:bg-gray-100"
-        }
-      `}
+                onClick={() => setSortBy("highToLow")}
+                className={`px-3 py-2 cursor-pointer ${
+                  sortBy === "highToLow"
+                    ? "bg-green-500 text-white"
+                    : "hover:bg-gray-100"
+                }`}
               >
-                Price: High → Low
+                Price High → Low
               </div>
 
               <div
-                onClick={() => {
-                  setSortBy("aToZ");
-                  setOpenDrawer(false);
-                }}
-                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                className={`px-4 py-2 cursor-pointer text-sm
-        ${
-          sortBy === "    A → Z"
-            ? "bg-green-500 text-white font-semibold"
-            : "hover:bg-gray-100"
-        }
-      `}
+                onClick={() => setSortBy("aToZ")}
+                className={`px-3 py-2 cursor-pointer ${
+                  sortBy === "aToZ"
+                    ? "bg-green-500 text-white"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 A → Z
               </div>
 
               <div
-                onClick={() => {
-                  setSortBy("zToA");
-                  setOpenDrawer(false);
-                }}
-                // className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                className={`px-4 py-2 cursor-pointer text-sm
-        ${
-          sortBy === "   Z → A"
-            ? "bg-green-500 text-white font-semibold"
-            : "hover:bg-gray-100"
-        }
-      `}
+                onClick={() => setSortBy("zToA")}
+                className={`px-3 py-2 cursor-pointer ${
+                  sortBy === "zToA"
+                    ? "bg-green-500 text-white"
+                    : "hover:bg-gray-100"
+                }`}
               >
                 Z → A
               </div>
@@ -321,55 +268,38 @@ export default function Home() {
 
           <div
             onClick={() => setDrawerMoreOpen(!drawerMoreOpen)}
-            className="flex justify-between items-center cursor-pointer font-semibold p-2 pt-3"
+            className="flex justify-between cursor-pointer p-2 font-normal"
           >
             More
-            {/* <span>{drawerMoreOpen ? "▲" : "▼"}</span> */}
-            {drawerMoreOpen ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
+            {drawerMoreOpen ? <ChevronUp /> : <ChevronDown />}
           </div>
 
           {drawerMoreOpen && (
-            <div className="pl-3 space-y-1">
+            <div className="space-y-1">
               <div
-                onClick={() => {
-                  navigate("/AddProduct");
-                  setOpenDrawer(false);
-                }}
-                className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 rounded"
+                onClick={() => navigate("/AddProduct")}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
               >
                 Add Product
               </div>
 
               <div
-                onClick={() => {
-                  navigate("/UpdateProduct");
-                  setOpenDrawer(false);
-                }}
-                className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 rounded"
+                onClick={() => navigate("/UpdateProduct")}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
               >
                 Update Product
               </div>
 
               <div
-                onClick={() => {
-                  navigate("/DeleteProduct");
-                  setOpenDrawer(false);
-                }}
-                className="px-4 py-2 cursor-pointer text-sm text-red-600 hover:bg-red-100 rounded"
+                onClick={() => navigate("/DeleteProduct")}
+                className="px-3 py-2 hover:bg-red-100 text-red-600 cursor-pointer"
               >
                 Delete Product
               </div>
             </div>
           )}
+
           <div
-            // onClick={() => {
-            //   dispatch(logout());
-            //   navigate("/login");
-            // }}
             onClick={() => setShowLogoutModal(true)}
             className="cursor-pointer text-red-600 hover:bg-red-100 p-2 rounded"
           >
@@ -378,27 +308,18 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center px-4 sm:px-6 py-3 sm:py-4 bg-black">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setOpenDrawer(true)}
-            className="text-white text-2xl"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+      <div className="flex items-center px-4 py-3 bg-black">
+        <button onClick={() => setOpenDrawer(true)} className="text-white">
+          <Menu />
+        </button>
 
-          <img
-            src="/smtlabs.jpg"
-            alt="logo"
-            className="h-8 w-auto cursor-pointer  justify-start mb-2"
-          />
-        </div>
+        <img src="/smtlabs.jpg" className="h-8 ml-3 cursor-pointer" />
 
         <div
           onClick={() => navigate("/cart")}
-          className="relative cursor-pointer ml-auto"
+          className="relative ml-auto cursor-pointer"
         >
-          <ShoppingCart className="text-white w-6 h-6" />
+          <ShoppingCart className="text-white" />
 
           {cartCount > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
@@ -406,82 +327,68 @@ export default function Home() {
             </span>
           )}
         </div>
+      </div>
 
-        <div className="relative w-full h-[45vh] sm:h-[55vh] md:h-[65vh] lg:h-[70vh] overflow-hidden bg-white">
+      {bannerImages.length > 0 && (
+        <div className="relative w-full h-[60vh] bg-white overflow-hidden">
           <img
             src={bannerImages[index]}
-            alt="banner"
-            className="w-full h-full object-contain transition-all duration-700"
+            className="w-full h-full object-contain"
           />
 
           <button
             onClick={() =>
               setIndex(index === 0 ? bannerImages.length - 1 : index - 1)
             }
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-2 py-2 text-2xl rounded-full mt-2"
+            className="absolute left-4 top-1/2"
           >
-            <ChevronLeft className="w-4 h-5 " />
+            <ChevronLeft />
           </button>
 
           <button
             onClick={() => setIndex((index + 1) % bannerImages.length)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white px-2 py-2 text-2xl rounded-full"
+            className="absolute right-4 top-1/2"
           >
-            <ChevronRight className="w-4 h-5 " />
+            <ChevronRight />
           </button>
         </div>
+      )}
 
-        <div className="px-6 py-10 bg-[#f5f5f5]">
-          <h2 className="text-xl font-bold mb-6">Today's Deals</h2>
+      <div className="px-6 py-10">
+        <h2 className="text-xl font-bold mb-6">Today's Deals</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {loading ? (
-              <p className="text-center col-span-full">Loading Products.....</p>
-            ) : (
-              // filterProducts.map((p) => (
-              sortedProducts.map((p) => (
-                <div
-                  key={p.id}
-                  // onClick={() => navigate(`/product/${p.id}`, { state: p })}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {loading ? (
+            <p className="col-span-full text-center">Loading Products...</p>
+          ) : (
+            sortedProducts.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white p-4 rounded shadow hover:shadow-lg flex flex-col h-full"
+              >
+                <img
+                  onClick={() => navigate(`/product/${p.id}`, { state: p })}
+                  src={p.image}
+                  className="w-full h-[200px] object-contain cursor-pointer"
+                />
 
-                  className="bg-white p-4 rounded shadow hover:shadow-lg transition cursor-pointer"
-                >
-                  <img
-                    onClick={() => navigate(`/product/${p.id}`, { state: p })}
-                    src={p.image}
-                    alt={p.title}
-                    className="w-full h-[180px] sm:h-[200px] md:h-[220px] object-contain"
-                  />
+                <h3 className="text-sm font-semibold mt-2 line-clamp-2">
+                  {p.title}
+                </h3>
 
-                  <div className="mt-3">
-                    <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">
-                      Best Seller
-                    </span>
+                <div className="flex justify-between  mt-auto pt-3">
+                  <span className="font-bold">${p.price}</span>
 
-                    <h3 className="text-sm font-semibold mt-2 line-clamp-2">
-                      {p.title}
-                    </h3>
-
-                    <div className="flex justify-between items-center mt-1 ">
-                      <span className="text-lg font-bold">${p.price}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dispatch(addToCart(p));
-                        }}
-                        className="bg-blue-600 text-white text-xs px-2 py-0 h-5 rounded justify-between
-                         transition-all duration-150
-   
-    active:bg-green-700"
-                      >
-                        Add to cart
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => dispatch(addToCart(p))}
+                    className="bg-blue-600 text-white text-xs px-2 py-1 rounded"
+                  >
+                    Add to cart
+                  </button>
                 </div>
-              ))
-            )}
-          </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -557,21 +464,15 @@ export default function Home() {
           </div>
         </footer>
       </div>
+
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-5 rounded-lg w-80 shadow-lg">
-            <h3 className="bg-white text-xs mt-1 py-2 font-semibold">
-              Confirm Logout
-            </h3>
-
-            <p className="text-xs font-normal mb-3">
-              Are you sure you want to logout?
-            </p>
-
-            <div className="flex justify-end gap-3">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded">
+            <p>Are you sure you want to logout?</p>
+            <div className="flex gap-3 mt-4 justify-end">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="px-3 py-1 border rounded text-xs bg-red-500 text-white"
+                className="px-3 py-1 border"
               >
                 Cancel
               </button>
@@ -581,7 +482,7 @@ export default function Home() {
                   dispatch(logout());
                   navigate("/login");
                 }}
-                className="px-3 py-1 border rounded text-xs bg-red-500 text-white"
+                className="px-3 py-1 bg-red-500 text-white"
               >
                 Logout
               </button>

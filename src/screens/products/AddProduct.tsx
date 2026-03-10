@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../utils/api/api";
-import { useDispatch } from "react-redux";
-import { addProduct } from "../../redux/slice/product";
-import type { AppDispatch } from "../../redux/store/store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function AddProduct() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
+  const queryClient = useQueryClient();
+
   const [form, setForm] = useState({
     title: "",
     price: "",
@@ -24,33 +22,45 @@ export default function AddProduct() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const addMutation = useMutation({
+    mutationFn: (newProduct: any) => api.post("/products", newProduct),
 
-    try {
-      const res = await api.post("/products", {
-        ...form,
-        price: Number(form.price),
-      });
+    onSuccess: (res) => {
+      const newProduct = {
+        ...res.data,
+        id: Date.now(),
+      };
 
-      // dispatch(addProduct(res.data));
-      dispatch(
-        addProduct({
-          ...res.data,
-          id: Date.now(),
-        }),
+      const existing = JSON.parse(
+        localStorage.getItem("customProducts") || "[]",
       );
+
+      const updated = [...existing, newProduct];
+
+      localStorage.setItem("customProducts", JSON.stringify(updated));
+
+      queryClient.setQueryData(["products"], (old: any = []) => {
+        return [...old, newProduct];
+      });
 
       navigate("/home", {
         state: { message: "Product Added Successfully" },
       });
-    } catch (err) {
+    },
+
+    onError: () => {
       alert("Failed to Add Product");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    addMutation.mutate({
+      ...form,
+      price: Number(form.price),
+      rating: Number(form.rating),
+    });
   };
 
   return (
@@ -96,7 +106,7 @@ export default function AddProduct() {
           />
 
           <input
-            name="Rating"
+            name="rating"
             placeholder="Rating"
             onChange={handleChange}
             className="border p-2 rounded"
@@ -113,10 +123,10 @@ export default function AddProduct() {
         />
 
         <button
-          disabled={loading}
+          disabled={addMutation.isPending}
           className="w-full bg-black text-white py-3 rounded mt-6 hover:bg-gray-900 disabled:opacity-50"
         >
-          {loading ? "Adding Product..." : "Add Product"}
+          {addMutation.isPending ? "Adding Product..." : "Add Product"}
         </button>
       </form>
     </div>

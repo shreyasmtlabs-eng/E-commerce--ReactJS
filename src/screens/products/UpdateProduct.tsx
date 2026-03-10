@@ -1,47 +1,80 @@
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState, AppDispatch } from "../../redux/store/store";
-import { updateProduct, updateAPIProducts } from "../../redux/slice/product";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getProductsApi } from "../../utils/api/productsApi";
+import { api } from "../../utils/api/api";
+
+type Product = {
+  id: number;
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+  image: string;
+};
 
 export default function UpdateProduct() {
-  const { products } = useSelector((state: RootState) => state.products);
-  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [editProduct, setEditProduct] = useState<any>(null);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
 
-  const handleEditClick = (product: any) => {
+  const { data: products = [], isLoading } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: getProductsApi,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (product: Product) =>
+      api.put(`/products/${product.id}`, product),
+
+    onSuccess: (_, variables) => {
+      const stored = JSON.parse(localStorage.getItem("customProducts") || "[]");
+
+      const updated = stored.map((p: any) =>
+        p.id === variables.id ? variables : p,
+      );
+
+      localStorage.setItem("customProducts", JSON.stringify(updated));
+
+      queryClient.setQueryData(["products"], (old: any[]) =>
+        old.map((p) => (p.id === variables.id ? variables : p)),
+      );
+
+      alert("Product Updated Successfully");
+      navigate("/home");
+    },
+    onError: () => {
+      alert("Failed to update product");
+    },
+  });
+
+  const handleEditClick = (product: Product) => {
     setEditProduct({ ...product });
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setEditProduct({ ...editProduct, [e.target.name]: e.target.value });
+    if (!editProduct) return;
+
+    setEditProduct({
+      ...editProduct,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleUpdate = () => {
-    // dispatch(
-    //   updateProduct({
-    //     ...editProduct,
-    //     price: Number(editProduct.price),
-    //   }),
-    // );
-
-    const updatedData = {
+    if (!editProduct) return;
+    updateMutation.mutate({
       ...editProduct,
-
       price: Number(editProduct.price),
-    };
-
-    console.log(" UI Update>>>>:", updatedData);
-    dispatch(updateProduct(updatedData));
-    dispatch(updateAPIProducts(updatedData));
-
-    alert("Product Updated Successfully");
-    navigate("/home");
+    });
   };
+
+  if (isLoading) {
+    return <p className="text-center mt-10">Loading Products...</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -65,7 +98,7 @@ export default function UpdateProduct() {
               {p.title}
             </h3>
 
-            <p className="text-lg font-bold mt-1">₹{p.price}</p>
+            <p className="text-lg font-bold mt-1">${p.price}</p>
 
             <button
               onClick={() => handleEditClick(p)}
@@ -128,9 +161,10 @@ export default function UpdateProduct() {
             <div className="flex gap-4 mt-6">
               <button
                 onClick={handleUpdate}
+                disabled={updateMutation.isPending}
                 className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700"
               >
-                Update
+                {updateMutation.isPending ? "Updating..." : "Update"}
               </button>
 
               <button

@@ -52,7 +52,6 @@ const authSlice = createSlice({
       action: PayloadAction<{ user: User; token: string }>
     ) => {
 
-
       console.log(" Login:>>>>>>", action.payload);
       console.log(" User:>>>>>", action.payload.user);
       console.log(" Token:>>>>", action.payload.token);
