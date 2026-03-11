@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +29,22 @@ export default function Home() {
   const [drawerMoreOpen, setDrawerMoreOpen] = useState(false);
   const [drawerCategoryOpen, setDrawerCategoryOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    sliderRef.current?.scrollBy({
+      left: -300,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollRight = () => {
+    sliderRef.current?.scrollBy({
+      left: 300,
+      behavior: "smooth",
+    });
+  };
 
   const { data: products = [], isLoading: loading } = useQuery({
     queryKey: ["products"],
@@ -64,14 +80,6 @@ export default function Home() {
     "electronics",
   ];
 
-  // useEffect(() => {
-  //   if (userGender === "female") {
-  //     setSelectedcategory("women's clothing");
-  //   } else if (userGender === "male") {
-  //     setSelectedcategory("men's clothing");
-  //   }
-  // }, [userGender]);
-
   const filteredProducts = products.filter((p) => {
     const category = p.category?.toLowerCase().trim();
 
@@ -91,7 +99,7 @@ export default function Home() {
           category === "electronics"
         );
       }
-      // return category === selectedcategory;
+
       return category === selectedcategory || category === "jewelery";
     }
 
@@ -101,7 +109,6 @@ export default function Home() {
       }
       return category === selectedcategory;
     }
-
     return true;
   });
 
@@ -135,7 +142,6 @@ export default function Home() {
       >
         <div className="flex justify-between p-4">
           <h2 className="font-semibold">Menu</h2>
-
           <button onClick={() => setOpenDrawer(false)}>
             <X className="w-5 h-5" />
           </button>
@@ -299,6 +305,61 @@ export default function Home() {
             </span>
           )}
         </div>
+      </div>
+
+      {/* <div className="bg-white py-6 px-4 "> */}
+      <div className="relative bg-white py-6 px-4">
+        <button
+          onClick={scrollLeft}
+          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow rounded-full p-2 z-10"
+        >
+          <ChevronLeft />
+        </button>
+
+        {/* <div className="flex gap-8 min-w-max"> */}
+        <div
+          ref={sliderRef}
+          className="flex gap-6 overflow-x-hidden scroll-smooth"
+        >
+          {[
+            { name: "men's clothing", img: "/mens clothing.png" },
+            { name: "women's clothing", img: "/womensclothing.png" },
+            { name: "jewelery", img: "/jewellery.png" },
+            { name: "electronics", img: "/electronic.jpg" },
+            { name: "footwear", img: "/footwears.png" },
+            { name: "watches", img: "/watches.png" },
+            { name: "bagss", img: "/bags.png" },
+            { name: "beauty", img: "/beautyy.png" },
+            { name: "eyewear", img: "/eyewear.png" },
+          ].map((item, i) => (
+            <div
+              key={i}
+              // onClick={() => setSelectedcategory(item.name)}
+              onClick={() => {
+                setSelectedcategory(item.name.toLowerCase().trim());
+                window.scrollTo({ top: 500, behavior: "smooth" });
+              }}
+              className="flex flex-col items-center cursor-pointer min-w-[110px]"
+            >
+              <div className="w-[90px] h-[90px] rounded-full bg-yellow-100 flex items-center justify-center overflow-hidden shadow">
+                <img
+                  src={item.img}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+
+              <p className="text-xs text-center mt-2 font-medium capitalize">
+                {item.name}
+              </p>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={scrollRight}
+          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow rounded-full p-2 z-10"
+        >
+          <ChevronRight />
+        </button>
       </div>
 
       {bannerImages.length > 0 && (
