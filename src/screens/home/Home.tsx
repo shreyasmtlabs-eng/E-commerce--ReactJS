@@ -64,16 +64,20 @@ export default function Home() {
     "electronics",
   ];
 
-  useEffect(() => {
-    if (userGender === "female") {
-      setSelectedcategory("women's clothing");
-    } else if (userGender === "male") {
-      setSelectedcategory("men's clothing");
-    }
-  }, [userGender]);
+  // useEffect(() => {
+  //   if (userGender === "female") {
+  //     setSelectedcategory("women's clothing");
+  //   } else if (userGender === "male") {
+  //     setSelectedcategory("men's clothing");
+  //   }
+  // }, [userGender]);
 
   const filteredProducts = products.filter((p) => {
     const category = p.category?.toLowerCase().trim();
+
+    if (selectedcategory !== "all") {
+      return category === selectedcategory;
+    }
 
     if (category === "electronics") {
       return true;
