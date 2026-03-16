@@ -67,7 +67,7 @@ export default function DeleteProduct() {
         {products.map((p) => (
           <div
             key={p.id}
-            className="bg-white p-4 rounded shadow hover:shadow-lg flex flex-col"
+            className="bg-white p-3 rounded shadow hover:shadow-lg flex flex-col"
           >
             <div className="h-[180px] flex items-center justify-center">
               <img
@@ -85,7 +85,7 @@ export default function DeleteProduct() {
 
             <button
               onClick={() => handleDeleteClick(p)}
-              className="mt-3 w-full bg-red-600 text-white py-1 rounded hover:bg-red-700"
+              className="mt-2  w-full bg-red-600 text-white rounded hover:bg-red-700"
             >
               Delete
             </button>

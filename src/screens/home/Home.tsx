@@ -6,6 +6,7 @@ import { getProductsApi } from "../../utils/api/productsApi";
 import type { RootState, AppDispatch } from "../../redux/store/store";
 import { logout } from "../../redux/slice/auth";
 import { addToCart } from "../../redux/slice/cart";
+import { addToWishlist, removeFromWishlist } from "../../redux/slice/wishlist";
 
 import {
   ShoppingCart,
@@ -15,6 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Search,
+  Heart,
 } from "lucide-react";
 
 export default function Home() {
@@ -29,6 +32,7 @@ export default function Home() {
   const [drawerMoreOpen, setDrawerMoreOpen] = useState(false);
   const [drawerCategoryOpen, setDrawerCategoryOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -58,13 +62,14 @@ export default function Home() {
     state.cart.cartItem.reduce((total, item) => total + item.quantity, 0),
   );
 
+  const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
+  const wishlistCount = wishlistItems.length;
   const user = useSelector((state: RootState) => state.auth.user);
   const userGender = user?.gender;
   const bannerImages = products.slice(0, 10).map((p) => p.image);
 
   useEffect(() => {
     if (bannerImages.length === 0) return;
-
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % bannerImages.length);
     }, 2500);
@@ -82,8 +87,14 @@ export default function Home() {
 
   const filteredProducts = products.filter((p) => {
     const category = p.category?.toLowerCase().trim();
+    const title = p.title?.toLowerCase() || "";
+    const search = searchText.toLowerCase();
 
-    if (selectedcategory !== "all") {
+    if (search && !title.includes(search) && !category.includes(search)) {
+      return false;
+    }
+
+    if (selectedcategory !== "all" && searchText === "") {
       return category === selectedcategory;
     }
 
@@ -109,6 +120,7 @@ export default function Home() {
       }
       return category === selectedcategory;
     }
+
     return true;
   });
 
@@ -293,17 +305,46 @@ export default function Home() {
 
         <img src="/smtlabs.jpg" className="h-8 ml-3 cursor-pointer" />
 
-        <div
-          onClick={() => navigate("/cart")}
-          className="relative ml-auto cursor-pointer"
-        >
-          <ShoppingCart className="text-white" />
+        <div className="flex items-center justify-start w-full ml-3">
+          <div className="relative bg-white flex items-center w-[40%] rounded-md overflow-hidden border border-gray-300">
+            <Search className="absolute right-2 w-4 h-4  text-gray-500" />
 
-          {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-              {cartCount}
-            </span>
-          )}
+            <input
+              type="text"
+              placeholder="Search Product"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full pl-2 pr-2 py-1 mb-0.5 outline-none text-xs"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 ">
+          <div
+            onClick={() => navigate("/wishlist")}
+            className="relative cursor-pointer"
+          >
+            <Heart className="text-white w-6 h-6" />
+
+            {wishlistCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                {wishlistCount}
+              </span>
+            )}
+          </div>
+
+          <div
+            onClick={() => navigate("/cart")}
+            className="relative ml-auto cursor-pointer"
+          >
+            <ShoppingCart className="text-white" />
+
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -389,7 +430,6 @@ export default function Home() {
 
       <div className="px-6 py-10">
         <h2 className="text-xl font-bold mb-6">Today's Deals</h2>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {loading ? (
             <p className="col-span-full text-center">Loading Products...</p>
@@ -397,13 +437,34 @@ export default function Home() {
             sortedProducts.map((p) => (
               <div
                 key={p.id}
-                className="bg-white p-4 rounded shadow hover:shadow-lg flex flex-col h-full"
+                className="relative  bg-white p-4 rounded shadow hover:shadow-lg flex flex-col h-full"
               >
                 <img
                   onClick={() => navigate(`/product/${p.id}`, { state: p })}
                   src={p.image}
                   className="w-full h-[200px] object-contain cursor-pointer"
                 />
+
+                <div className="absolute top-2 right-2 cursor-pointer">
+                  <Heart
+                    onClick={() => {
+                      const exists = wishlistItems.some(
+                        (item) => item.id === p.id,
+                      );
+
+                      if (exists) {
+                        dispatch(removeFromWishlist(p.id));
+                      } else {
+                        dispatch(addToWishlist(p));
+                      }
+                    }}
+                    className={`w-4 h-4 ${
+                      wishlistItems.some((item) => item.id === p.id)
+                        ? "text-red-500 fill-red-500"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </div>
 
                 <h3 className="text-sm font-semibold mt-2 line-clamp-2">
                   {p.title}

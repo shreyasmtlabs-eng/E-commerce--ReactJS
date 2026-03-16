@@ -11,6 +11,7 @@ import DeleteProduct from "../screens/products/DeleteProduct";
 import Category from "../screens/category/Category";
 import ProductDetails from "../screens/productdetails/ProductDetails";
 import Cart from "../screens/cart/Cart";
+import Wishlist from "../screens/wishlist/Wishlist";
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -28,6 +29,7 @@ function AppRoutes() {
         <Route path="about" element={<About />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="cart" element={<Cart />} />
+        <Route path="wishlist" element={<Wishlist />} />
       </Routes>
     </BrowserRouter>
   );

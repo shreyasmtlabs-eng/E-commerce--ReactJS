@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slice/auth";
 import productReducer from "../slice/product";
 import cartReducer from "../slice/cart";
+import wishlistReducer from "../slice/wishlist"
  
 const loadState = () => {
   try {
@@ -26,6 +27,7 @@ export const store = configureStore({
     auth: authReducer,
     products: productReducer,
     cart: cartReducer,
+       wishlist: wishlistReducer,
   },
 
 preloadedState: loadState(),
