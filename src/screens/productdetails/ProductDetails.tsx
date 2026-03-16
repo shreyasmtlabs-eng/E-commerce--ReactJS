@@ -4,24 +4,39 @@ import { addToCart } from "../../redux/slice/cart";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../redux/store/store";
 import type { RootState } from "../../redux/store/store";
+import { useEffect } from "react";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+
+  const darkMode = useSelector((state: RootState) => state.darkMode.isDarkMode);
+
   const reduxProduct = useSelector((state: RootState) =>
     state.products.products.find((p) => p.id === Number(id)),
   );
 
   const product = location.state || reduxProduct;
 
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   if (!product) {
     return <div className="p-10 text-center"> Product not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div
+      // className="min-h-screen bg-gray-100 p-6"
+      className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-100"} p-6`}
+    >
       <button
         onClick={() => navigate(-1)}
         className="mb-6 text-blue-600 hover:underline"
@@ -29,14 +44,25 @@ export default function ProductDetails() {
         Back
       </button>
 
-      <div className="bg-white rounded-lg shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div
+        // className="bg-white rounded-lg shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-8"
+        className={`rounded-lg shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-8 ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}
+      >
         <img
           src={product.image}
           alt={product.title}
           className="w-full h-[250px] sm:h-[350px] object-contain"
         />
         <div>
-          <h1 className="text-xl font-bold"> {product.title}</h1>
+          <h1
+            //  className="text-xl font-bold"
+            className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}
+          >
+            {" "}
+            {product.title}
+          </h1>
           <div className="mt-4 flex flex-col gap-1 mb-0">
             <span className="  bg-red-600 text-white px-2 py-1  text-xs rounded w-fit">
               Best Seller
@@ -46,7 +72,10 @@ export default function ProductDetails() {
               Price ₹{product.price}
             </span>
 
-            <span className=" text-gray-400 text-sm">
+            <span
+              // className=" text-gray-400 text-sm"
+              className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}
+            >
               {" "}
               Category: {product.category}
             </span>
@@ -55,20 +84,33 @@ export default function ProductDetails() {
               {[...Array(5)].map((_, index) => (
                 <span
                   key={index}
+                  // className={`text-lg ${
+                  //   index < Math.floor(product?.rating?.rate)
+                  //     ? "text-yellow-500"
+                  //     : "text-gray-400"
+                  // }`}
                   className={`text-lg ${
                     index < Math.floor(product?.rating?.rate)
                       ? "text-yellow-500"
-                      : "text-gray-400"
+                      : darkMode
+                        ? "text-gray-600"
+                        : "text-gray-400"
                   }`}
                 >
                   ★
                 </span>
               ))}
 
-              <span className="text-sm text-gray-600 ml-2">
+              <span
+                className={`text-sm ml-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
+                // "text-sm text-gray-600 ml-2"
+              >
                 {product?.rating?.rate}
               </span>
-              <span className="text-sm text-gray-400 ml-2">
+              <span
+                // className="text-sm text-gray-400 ml-2"
+                className={`text-sm ml-2 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
+              >
                 ({product?.rating?.count})
               </span>
             </div>
@@ -86,7 +128,12 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          <p className="mt-6 text-gray-600">{product.description}</p>
+          <p
+            // className="mt-6 text-gray-600"
+            className={`mt-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
+          >
+            {product.description}
+          </p>
         </div>
       </div>
     </div>
