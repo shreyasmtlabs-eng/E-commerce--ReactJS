@@ -2,7 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slice/auth";
 import productReducer from "../slice/product";
 import cartReducer from "../slice/cart";
-import wishlistReducer from "../slice/wishlist"
+import wishlistReducer from "../slice/wishlist";
+import darkModereducer from "../slice/darkMode";
  
 const loadState = () => {
   try {
@@ -28,6 +29,7 @@ export const store = configureStore({
     products: productReducer,
     cart: cartReducer,
        wishlist: wishlistReducer,
+       darkMode:darkModereducer,
   },
 
 preloadedState: loadState(),
