@@ -197,11 +197,23 @@ export default function Home() {
 
             <div
               onClick={() => setDrawerCategoryOpen(!drawerCategoryOpen)}
-              // className="flex justify-between cursor-pointer p-2 font-normal"
-              className={`flex justify-between cursor-pointer p-2 font-normal ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+              // className={`flex justify-between cursor-pointer p-2 font-normal ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+              className={`flex justify-between cursor-pointer p-2 font-normal ${
+                darkMode
+                  ? "text-white hover:bg-gray-700"
+                  : "text-gray-900 hover:bg-gray-100"
+              }`}
             >
               Category
-              {drawerCategoryOpen ? <ChevronUp /> : <ChevronDown />}
+              {drawerCategoryOpen ? (
+                <ChevronUp
+                  className={darkMode ? "text-gray-300" : "text-gray-600"}
+                />
+              ) : (
+                <ChevronDown
+                  className={darkMode ? "text-gray-300" : "text-gray-600"}
+                />
+              )}
             </div>
 
             {drawerCategoryOpen && (
@@ -217,7 +229,10 @@ export default function Home() {
                   ${
                     selectedcategory === cat
                       ? "bg-green-500 text-white"
-                      : "hover:bg-gray-100"
+                      : // : "hover:bg-gray-100"
+                        darkMode
+                        ? "text-gray-300 hover:bg-gray-700"
+                        : "text-gray-700 hover:bg-gray-100"
                   }`}
                   >
                     {cat}

@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProductsApi } from "../../utils/api/productsApi";
 import { api } from "../../utils/api/api";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store/store";
 
 type Product = {
   id: number;
@@ -18,6 +20,16 @@ export default function UpdateProduct() {
   const queryClient = useQueryClient();
 
   const [editProduct, setEditProduct] = useState<Product | null>(null);
+
+  const darkMode = useSelector((state: RootState) => state.darkMode.isDarkMode);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["products"],
@@ -73,18 +85,43 @@ export default function UpdateProduct() {
   };
 
   if (isLoading) {
-    return <p className="text-center mt-10">Loading Products...</p>;
+    return (
+      <div
+        className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-100"} p-6`}
+      >
+        <p
+          className={`text-center mt-10  $ {darkMode ? "text-white" :  "text-gray-900" }`}
+          // "text-center mt-10"
+        >
+          Loading Products...
+        </p>
+        ;
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h2 className="text-2xl font-bold mb-6 text-center">Update Products</h2>
+    <div
+      className={`min-h-screen ${darkMode ? "bg-gray-900 " : "bg-gray-100"} p-6  transition-colors duration-200`}
+      // "min-h-screen bg-gray-100 p-6"
+    >
+      <h2
+        className={`text-2xl font-bold mb-6 text-center ${darkMode ? "text-white" : "text-gray-900"}`}
+        // "text-2xl font-bold mb-6 text-center"
+      >
+        Update Products
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((p) => (
           <div
             key={p.id}
-            className="bg-white p-4 rounded shadow hover:shadow-lg flex flex-col"
+            // className="bg-white p-4 rounded shadow hover:shadow-lg flex flex-col"
+            className={`p-4 rounded shadow hover:shadow-lg flex flex-col transition-colors ${
+              darkMode
+                ? "bg-gray-800 text-white hover: bg-gray-700"
+                : "bg-white text-gray-900  hover : bg-gray-50"
+            }`}
           >
             <div className="h-[180px] flex items-center justify-center">
               <img
@@ -94,7 +131,12 @@ export default function UpdateProduct() {
               />
             </div>
 
-            <h3 className="text-sm font-semibold mt-2 line-clamp-2 min-h-[40px]">
+            <h3
+              // className="text-sm font-semibold mt-2 line-clamp-2 min-h-[40px]"
+              className={`text-sm font-semibold mt-2 line-clamp-2 min-h-[40px] ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
               {p.title}
             </h3>
 
@@ -102,7 +144,12 @@ export default function UpdateProduct() {
 
             <button
               onClick={() => handleEditClick(p)}
-              className="mt-3 w-full bg-black text-white py-1 rounded hover:bg-gray-900"
+              // className="mt-3 w-full bg-black text-white py-1 rounded hover:bg-gray-900"
+              className={`mt-3 w-full py-1 rounded transition-colors ${
+                darkMode
+                  ? "bg-blue-600 text-white hover:bg-blue-600"
+                  : "bg-black text-white hover:bg-gray-900"
+              }`}
             >
               Edit
             </button>
@@ -112,8 +159,20 @@ export default function UpdateProduct() {
 
       {editProduct && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded w-full max-w-xl">
-            <h3 className="text-xl font-bold mb-4 text-center">Edit Product</h3>
+          {/* <div className="bg-white p-6 rounded w-full max-w-xl"> */}
+          <div
+            className={`p-6 rounded w-full max-w-xl ${
+              darkMode ? "bg-gray-800" : "bg-white"
+            }`}
+          >
+            <h3
+              // className="text-xl font-bold mb-4 text-center"
+              className={`text-xl font-bold mb-4 text-center ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}
+            >
+              Edit Product
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
@@ -121,7 +180,12 @@ export default function UpdateProduct() {
                 value={editProduct.title}
                 onChange={handleChange}
                 placeholder="Title"
-                className="border p-2 rounded"
+                // className="border p-2 rounded"
+                className={`border p-2 rounded transition-colors ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                }`}
               />
 
               <input
@@ -130,7 +194,12 @@ export default function UpdateProduct() {
                 onChange={handleChange}
                 placeholder="Price"
                 type="number"
-                className="border p-2 rounded"
+                // className="border p-2 rounded"
+                className={`border p-2 rounded transition-colors ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                }`}
               />
 
               <input
@@ -138,7 +207,12 @@ export default function UpdateProduct() {
                 value={editProduct.image}
                 onChange={handleChange}
                 placeholder="Image URL"
-                className="border p-2 rounded"
+                // className="border p-2 rounded"
+                className={`border p-2 rounded transition-colors ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                }`}
               />
 
               <input
@@ -146,7 +220,12 @@ export default function UpdateProduct() {
                 value={editProduct.category}
                 onChange={handleChange}
                 placeholder="Category"
-                className="border p-2 rounded"
+                // className="border p-2 rounded"
+                className={`border p-2 rounded transition-colors ${
+                  darkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+                }`}
               />
             </div>
 
@@ -155,7 +234,12 @@ export default function UpdateProduct() {
               value={editProduct.description}
               onChange={handleChange}
               placeholder="Description"
-              className="border p-2 rounded w-full mt-4 h-28"
+              // className="border p-2 rounded w-full mt-4 h-28"
+              className={`border p-2 rounded  w-full mt-4 h-28 ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
+              }`}
             />
 
             <div className="flex gap-4 mt-6">
@@ -169,7 +253,13 @@ export default function UpdateProduct() {
 
               <button
                 onClick={() => setEditProduct(null)}
-                className="flex-1 bg-gray-400 text-white py-2 rounded hover:bg-gray-500"
+                // className="flex-1 bg-gray-400 text-white py-2 rounded hover:bg-gray-500"
+
+                className={`flex-1 py-2 rounded transition-colors ${
+                  darkMode
+                    ? "bg-gray-600 text-white hover:bg-gray-500"
+                    : "bg-gray-400 text-white hover:bg-gray-500"
+                }`}
               >
                 Cancel
               </button>
