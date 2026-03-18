@@ -7,13 +7,14 @@ import {
 } from "../../redux/slice/cart";
 import { Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart() {
   const dispatch = useDispatch<AppDispatch>();
   const [openModal, setOpenModal] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { cartItem } = useSelector((state: RootState) => state.cart);
-
+  const navigate = useNavigate();
   const darkMode = useSelector((state: RootState) => state.darkMode.isDarkMode);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function Cart() {
   );
 
   const gst = totalAmount * 0.18;
-  const deliveryFee = 2;
+  const deliveryFee = 20;
   const finalAmount = totalAmount + gst + deliveryFee;
 
   if (cartItem.length === 0) {
@@ -159,7 +160,7 @@ export default function Cart() {
 
             className={`text-sm font-bold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}
           >
-            Bill Details
+            Price Details
           </h2>
 
           {/* <div className="flex justify-between text-sm mb-2"> */}
@@ -207,8 +208,11 @@ export default function Cart() {
             <span>₹{finalAmount.toFixed(2)}</span>
           </div>
 
-          <button className="w-full mt-2 bg-black text-white text-xs py-2 rounded-lg hover:opacity-60 ">
-            Click to Pay
+          <button
+            onClick={() => navigate("/checkout")}
+            className="w-full mt-2 bg-blue-600 text-white text-sm py-2 rounded-lg hover:opacity-60 "
+          >
+            Proceed to Checkout
           </button>
         </div>
       </div>
@@ -239,7 +243,7 @@ export default function Cart() {
                   }
                   setOpenModal(false);
                 }}
-                className="px-3 py-1 border rounded text-xs bg-red-500 text-white"
+                className="px-2 py-1 border rounded text-xs bg-red-500 text-white"
               >
                 Remove
               </button>

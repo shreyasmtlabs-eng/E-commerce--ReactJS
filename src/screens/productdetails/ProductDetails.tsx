@@ -34,7 +34,6 @@ export default function ProductDetails() {
 
   return (
     <div
-      // className="min-h-screen bg-gray-100 p-6"
       className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-gray-100"} p-6`}
     >
       <button
@@ -45,7 +44,6 @@ export default function ProductDetails() {
       </button>
 
       <div
-        // className="bg-white rounded-lg shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-8"
         className={`rounded-lg shadow-lg p-6 grid grid-cols-1 md:grid-cols-2 gap-8 ${
           darkMode ? "bg-gray-800" : "bg-white"
         }`}
@@ -55,9 +53,9 @@ export default function ProductDetails() {
           alt={product.title}
           className="w-full h-[250px] sm:h-[350px] object-contain"
         />
+
         <div>
           <h1
-            //  className="text-xl font-bold"
             className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}
           >
             {" "}
@@ -73,7 +71,6 @@ export default function ProductDetails() {
             </span>
 
             <span
-              // className=" text-gray-400 text-sm"
               className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}
             >
               {" "}
@@ -84,11 +81,6 @@ export default function ProductDetails() {
               {[...Array(5)].map((_, index) => (
                 <span
                   key={index}
-                  // className={`text-lg ${
-                  //   index < Math.floor(product?.rating?.rate)
-                  //     ? "text-yellow-500"
-                  //     : "text-gray-400"
-                  // }`}
                   className={`text-lg ${
                     index < Math.floor(product?.rating?.rate)
                       ? "text-yellow-500"
@@ -103,12 +95,10 @@ export default function ProductDetails() {
 
               <span
                 className={`text-sm ml-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
-                // "text-sm text-gray-600 ml-2"
               >
                 {product?.rating?.rate}
               </span>
               <span
-                // className="text-sm text-gray-400 ml-2"
                 className={`text-sm ml-2 ${darkMode ? "text-gray-500" : "text-gray-400"}`}
               >
                 ({product?.rating?.count})
@@ -128,10 +118,7 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          <p
-            // className="mt-6 text-gray-600"
-            className={`mt-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}
-          >
+          <p className={`mt-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
             {product.description}
           </p>
         </div>

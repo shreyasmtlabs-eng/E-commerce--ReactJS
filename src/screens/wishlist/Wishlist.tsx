@@ -16,7 +16,6 @@ export default function Wishlist() {
   }, [darkMode]);
 
   return (
-    // <div className="p-4">
     <div
       className={`min-h-screen ${darkMode ? "bg-gray-900" : "bg-[#f5f5f5]"}`}
     >
@@ -32,7 +31,6 @@ export default function Wishlist() {
             {wishlistItems.map((p) => (
               <div
                 key={p.id}
-                // className="bg-white p-3 shadow rounded flex flex-col"
                 className={`p-3 shadow rounded flex flex-col ${
                   darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
                 }`}

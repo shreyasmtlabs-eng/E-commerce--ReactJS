@@ -12,6 +12,7 @@ import Category from "../screens/category/Category";
 import ProductDetails from "../screens/productdetails/ProductDetails";
 import Cart from "../screens/cart/Cart";
 import Wishlist from "../screens/wishlist/Wishlist";
+import Checkout from "../screens/checkoutpage/Checkout";
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -30,6 +31,7 @@ function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="cart" element={<Cart />} />
         <Route path="wishlist" element={<Wishlist />} />
+        <Route path="checkout" element={<Checkout />} />
       </Routes>
     </BrowserRouter>
   );
