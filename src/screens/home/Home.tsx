@@ -8,6 +8,9 @@ import { logout } from "../../redux/slice/auth";
 import { addToCart } from "../../redux/slice/cart";
 import { addToWishlist, removeFromWishlist } from "../../redux/slice/wishlist";
 import { toggleDarkMode } from "../../redux/slice/darkMode";
+
+import { logEvent } from "firebase/analytics";
+import { analytics } from "../../firebase/firebase";
 import {
   ShoppingCart,
   ChevronDown,
@@ -149,6 +152,12 @@ export default function Home() {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
+
+  useEffect(() => {
+    logEvent(analytics, "page_view", {
+      page_path: location.pathname,
+    });
+  }, [location]);
 
   return (
     // <div className="min-h-screen bg-[#f5f5f5]">
@@ -377,7 +386,14 @@ export default function Home() {
                 type="text"
                 placeholder="Search Product"
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                // onChange={(e) => setSearchText(e.target.value)}
+                onChange={(e) => {
+                  setSearchText(e.target.value);
+
+                  logEvent(analytics, "search", {
+                    search_term: e.target.value,
+                  });
+                }}
                 // className="w-full pl-2 pr-2 py-1 mb-0.5 outline-none text-xs"
                 className={`w-full pl-2 pr-2 py-1 mb-0.5 outline-none text-xs ${darkMode ? "bg-gray-700 text-white placeholder-gray-400" : "bg-white text-gray-900"}`}
               />
@@ -537,21 +553,46 @@ export default function Home() {
                   className={`relative p-4 rounded shadow hover:shadow-lg flex flex-col h-full ${darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"}`}
                 >
                   <img
-                    onClick={() => navigate(`/product/${p.id}`, { state: p })}
+                    // onClick={() => navigate(`/product/${p.id}`, { state: p })}
+                    onClick={() => {
+                      logEvent(analytics, "view_product", {
+                        product_id: p.id,
+                        product_name: p.title,
+                      });
+                      navigate(`/product/${p.id}`, { state: p });
+                    }}
                     src={p.image}
                     className="w-full h-[200px] object-contain cursor-pointer"
                   />
 
                   <div className="absolute top-2 right-2 cursor-pointer">
                     <Heart
+                      // onClick={() => {
+                      //   const exists = wishlistItems.some(
+                      //     (item) => item.id === p.id,
+                      //   );
+
+                      //   if (exists) {
+                      //     dispatch(removeFromWishlist(p.id));
+                      //   } else {
+                      //     dispatch(addToWishlist(p));
+                      //   }
+                      // }}
+
                       onClick={() => {
                         const exists = wishlistItems.some(
                           (item) => item.id === p.id,
                         );
 
                         if (exists) {
+                          logEvent(analytics, "remove_from_wishlist", {
+                            product_id: p.id,
+                          });
                           dispatch(removeFromWishlist(p.id));
                         } else {
+                          logEvent(analytics, "add_to_wishlist", {
+                            product_id: p.id,
+                          });
                           dispatch(addToWishlist(p));
                         }
                       }}
@@ -573,7 +614,16 @@ export default function Home() {
                     <span className="font-bold">${p.price}</span>
 
                     <button
-                      onClick={() => dispatch(addToCart(p))}
+                      // onClick={() => dispatch(addToCart(p))}
+
+                      onClick={() => {
+                        logEvent(analytics, "add_to_cart", {
+                          product_id: p.id,
+                          product_name: p.title,
+                          price: p.price,
+                        });
+                        dispatch(addToCart(p));
+                      }}
                       className="bg-blue-600 text-white text-xs px-2 py-1 rounded"
                     >
                       Add to cart

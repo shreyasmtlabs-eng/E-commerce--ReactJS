@@ -161,7 +161,6 @@ export default function Checkout() {
             <textarea
               value={address.address}
               placeholder="Full Address"
-              //   className="border p-1 w-full mb-2 text-xs rounded"
               className={`border p-1 w-full mb-2  text-xs rounded transition-colors ${
                 darkMode
                   ? "bg-gray-700 border-gray-600 text-white"
@@ -246,9 +245,7 @@ export default function Checkout() {
                 onClick={() => setSelectedIndex(index)}
                 className={`p-3 border rounded mb-2 cursor-pointer ${
                   selectedIndex === index
-                    ? // ? "border-blue-500 bg-pink-50"
-                      // : "border-gray-200"
-                      darkMode
+                    ? darkMode
                       ? "border-blue-400 bg-blue-900/30"
                       : "border-blue-500 bg-pink-50"
                     : darkMode
