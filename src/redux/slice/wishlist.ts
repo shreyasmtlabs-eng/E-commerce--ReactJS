@@ -6,6 +6,7 @@ type Product = {
   title: string;
   price: number;
   image: string;
+  category:string;
 };
 
 interface WishlistState {
